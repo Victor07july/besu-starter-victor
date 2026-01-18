@@ -26,85 +26,42 @@ PRIVATE_KEY = "8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63"
 # Cole aqui o ABI que você recebeu do /compile-contract/
 ABI = [
     {
-"inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "_initialValue",
-                    "type": "uint256"
-                }
-            ],
-            "stateMutability": "nonpayable",
-            "type": "constructor"
-        },
-        {
-            "anonymous": "false",
-            "inputs": [
-                {
-                    "indexed": "true",
-                    "internalType": "address",
-                    "name": "sender",
-                    "type": "address"
-                },
-                {
-                    "indexed": "false",
-                    "internalType": "uint256",
-                    "name": "value",
-                    "type": "uint256"
-                }
-            ],
-            "name": "DataStored",
-            "type": "event"
-        },
-        {
-            "inputs": [],
-            "name": "get",
-            "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "_value",
-                    "type": "uint256"
-                }
-            ],
-            "name": "set",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "storedData",
-            "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        }
+        "inputs": [],
+        "name": "favoriteInt",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_favoriteNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "store",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
 ]
 
 # Cole aqui o BYTECODE que você recebeu do /compile-contract/
-BYTECODE = "608060405234801561001057600080fd5b506040516102fb3803806102fb833981810160405281019061003291906100c8565b806000819055503373ffffffffffffffffffffffffffffffffffffffff167fe42ab83e51dcfb436887e998d12b1585d6eea49b2900b0b3bcd0591dec7c3d198260405161007f9190610104565b60405180910390a25061011f565b600080fd5b6000819050919050565b6100a581610092565b81146100b057600080fd5b50565b6000815190506100c28161009c565b92915050565b6000602082840312156100de576100dd61008d565b5b60006100ec848285016100b3565b91505092915050565b6100fe81610092565b82525050565b600060208201905061011960008301846100f5565b92915050565b6101cd8061012e6000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80632a1afcd91461004657806360fe47b1146100645780636d4ce63c14610080575b600080fd5b61004e61009e565b60405161005b919061011e565b60405180910390f35b61007e6004803603810190610079919061016a565b6100a4565b005b6100886100fc565b604051610095919061011e565b60405180910390f35b60005481565b806000819055503373ffffffffffffffffffffffffffffffffffffffff167fe42ab83e51dcfb436887e998d12b1585d6eea49b2900b0b3bcd0591dec7c3d19826040516100f1919061011e565b60405180910390a250565b60008054905090565b6000819050919050565b61011881610105565b82525050565b6000602082019050610133600083018461010f565b92915050565b600080fd5b61014781610105565b811461015257600080fd5b50565b6000813590506101648161013e565b92915050565b6000602082840312156101805761017f610139565b5b600061018e84828501610155565b9150509291505056fea264697066735822122043071242007a81bc30e6ff73e1130c05b04bf48b08c4b2767bd490a8e0e601e964736f6c634300080a0033"
+BYTECODE = "608060405234801561001057600080fd5b50610133806100206000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80636057361d146037578063b9da175614604f575b600080fd5b604d60048036038101906049919060af565b6069565b005b60556073565b6040516060919060e4565b60405180910390f35b8060008190555050565b60005481565b600080fd5b6000819050919050565b608f81607e565b8114609957600080fd5b50565b60008135905060a9816088565b92915050565b60006020828403121560c25760c16079565b5b600060ce84828501609c565b91505092915050565b60de81607e565b82525050565b600060208201905060f7600083018460d7565b9291505056fea2646970667358221220a967bda5cf845c8c5de7331a3a879c8b72fd6c71190ae122a40ec7a725ccb87364736f6c63430008130033"
 
 # Parâmetros do construtor (ajuste conforme seu contrato)
 # Para SimpleStorage que recebe _initialValue:
 CONSTRUCTOR_PARAMS = [42]  # Valor inicial = 42
 
 # Configurações de gas
-GAS_LIMIT = 300  # 3 milhões (ajuste se necessário)
+GAS_LIMIT = 3000000  # 3 milhões (ajuste se necessário)
 
 # ===========================
 # SCRIPT
