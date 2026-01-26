@@ -33,7 +33,7 @@ VERIFY_SSL = False  # False para localhost com certificado self-signed
 JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InZpY3RvckBnbWFpbC5jb20iLCJleHAiOjE3Njg1ODU1MjAsImlhdCI6MTc2ODQxMjcyMC43NjgwODl9.ZRBxr4QNWX264YU5FbZRN0WsJf5Vf0V52Vg7y7SaAno"
 # Credenciais de login (usado apenas se JWT_TOKEN for None)
 USERNAME = "victor@gmail.com"
-PASSWORD = "Sonic@10"
+PASSWORD = "Teste@123"
 
 # Contrato
 CONTRACT_FILE_PATH = "/home/victor/besu-starter-victor/contracts/Polo_E1/contract/e1_polo.sol"  # Ajuste o caminho
