@@ -1,5 +1,6 @@
 """
 AWS Lambda Function para invocar contrato E1PoloCalculator
+Versão SQS: Consome mensagens do SQS FIFO com Message Groups
 """
 
 import json
@@ -11,7 +12,14 @@ from botocore.exceptions import ClientError
 # Cliente para Secrets Manager
 secrets_client = boto3.client('secretsmanager')
 
-# ABI do contrato (será preenchido após compilação)
+# Mapeamento de Message Groups para Secrets
+# Usando contas do genesis.json que já têm saldo
+MESSAGE_GROUP_TO_SECRET = {
+    'vehicle_group_1': 'besu-blockchain-keys-group1',  # 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
+    'vehicle_group_2': 'besu-blockchain-keys-group2'   # 0xf17f52151EbEF6C7334FAD080c5704D77216b732
+}
+
+# ABI do contrato
 CONTRACT_ABI = [
     {
         "inputs": [
@@ -64,9 +72,7 @@ def get_secret(secret_name):
 
 
 def prepare_vehicle_data(row):
-    """
-    Converte dados do CSV para o formato do contrato
-    """
+    """Converte dados para o formato do contrato"""
     return (
         int(row.get('distance_highway', 0)),
         int(row.get('distance_city', 0)),
@@ -80,9 +86,7 @@ def prepare_vehicle_data(row):
 
 
 def invoke_smart_contract(w3, contract, account, vehicle_data):
-    """
-    Invoca o smart contract para calcular E1
-    """
+    """Invoca o smart contract para calcular E1"""
     try:
         # Construir transação
         nonce = w3.eth.get_transaction_count(account.address)
@@ -121,7 +125,7 @@ def invoke_smart_contract(w3, contract, account, vehicle_data):
                     'gas_used': receipt['gasUsed'],
                     'meta_co2': event['metaCO2'],
                     'diff': event['diff'],
-                    'e1_value': event['e1Value'] / 1000000,  # Converter para BRL
+                    'e1_value': event['e1Value'] / 1000000,
                     'timestamp': event['timestamp']
                 }
         else:
@@ -141,113 +145,135 @@ def invoke_smart_contract(w3, contract, account, vehicle_data):
 
 def lambda_handler(event, context):
     """
-    Handler principal da Lambda
+    Handler principal da Lambda (versão SQS)
     """
     try:
-        print("=== Lambda E1 Polo Calculator Iniciada ===")
+        print("=== Lambda E1 Polo Calculator (SQS) Iniciada ===")
         print(f"Event: {json.dumps(event)}")
         
-        # Parse do body se vier do API Gateway
-        if 'body' in event:
-            if isinstance(event['body'], str):
-                body = json.loads(event['body'])
-            else:
-                body = event['body']
-        else:
-            body = event
+        # Processar mensagens do SQS
+        # Cada evento pode ter múltiplos Records (batch)
+        records = event.get('Records', [])
         
-        # Recuperar configurações do Secrets Manager
-        print("Recuperando secrets...")
-        blockchain_keys = get_secret('besu-blockchain-keys')
-        contract_config = get_secret('besu-contract-config')
+        if not records:
+            print("⚠️ Nenhum record recebido")
+            return {'statusCode': 200, 'body': 'No records'}
         
-        RPC_URL = contract_config['RPC_URL']
-        CONTRACT_ADDRESS = contract_config['CONTRACT_ADDRESS']
-        SENDER_ADDRESS = blockchain_keys['SENDER_ADDRESS']
-        PRIVATE_KEY = blockchain_keys['PRIVATE_KEY']
-        
-        print(f"RPC URL: {RPC_URL}")
-        print(f"Contract: {CONTRACT_ADDRESS}")
-        print(f"Sender: {SENDER_ADDRESS}")
-        
-        # Conectar à blockchain
-        print("Conectando à blockchain...")
-        # Desabilitar verificação SSL para certificados self-signed
-        import urllib3
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        
-        w3 = Web3(Web3.HTTPProvider(
-            RPC_URL,
-            request_kwargs={'verify': False}
-        ))
-        
-        if not w3.is_connected():
-            return {
-                'statusCode': 500,
-                'body': json.dumps({
-                    'error': 'Failed to connect to blockchain',
-                    'rpc_url': RPC_URL
-                })
-            }
-        
-        print(f"Conectado! Chain ID: {w3.eth.chain_id}")
-        
-        # Carregar contrato
-        contract = w3.eth.contract(
-            address=Web3.to_checksum_address(CONTRACT_ADDRESS),
-            abi=CONTRACT_ABI
-        )
-        
-        # Configurar conta
-        account = w3.eth.account.from_key(PRIVATE_KEY)
-        
-        # Verificar se é um lote ou item único
-        if isinstance(body, list):
-            records = body
-        else:
-            records = [body]
-        
-        print(f"Processando {len(records)} registro(s)...")
+        print(f"Processando {len(records)} mensagem(ns) do SQS...")
         
         results = []
         
         for idx, record in enumerate(records):
-            print(f"\nProcessando registro {idx + 1}/{len(records)}...")
+            print(f"\n{'='*60}")
+            print(f"Mensagem {idx + 1}/{len(records)}")
+            print(f"{'='*60}")
+            
+            # Extrair informações do SQS
+            message_body = json.loads(record['body'])
+            message_group_id = record['attributes'].get('MessageGroupId', 'unknown')
+            
+            print(f"Message Group: {message_group_id}")
+            print(f"Data: {json.dumps(message_body)}")
             
             try:
-                # Preparar dados
-                vehicle_data = prepare_vehicle_data(record)
+                # Determinar qual conta usar baseado no Message Group
+                secret_name = MESSAGE_GROUP_TO_SECRET.get(message_group_id)
                 
-                print(f"  Distância rodovia: {vehicle_data[0]} km")
-                print(f"  Distância cidade: {vehicle_data[1]} km")
+                if not secret_name:
+                    print(f"⚠️ Message Group desconhecido: {message_group_id}")
+                    print(f"   Usando default: besu-blockchain-keys")
+                    secret_name = 'besu-blockchain-keys'
+                
+                # Recuperar configurações
+                print(f"Recuperando secret: {secret_name}...")
+                blockchain_keys = get_secret(secret_name)
+                contract_config = get_secret('besu-contract-config')
+                
+                RPC_URL = contract_config['RPC_URL']
+                CONTRACT_ADDRESS = contract_config['CONTRACT_ADDRESS']
+                SENDER_ADDRESS = blockchain_keys['SENDER_ADDRESS']
+                PRIVATE_KEY = blockchain_keys['PRIVATE_KEY']
+                
+                print(f"RPC URL: {RPC_URL}")
+                print(f"Contract: {CONTRACT_ADDRESS}")
+                print(f"Sender: {SENDER_ADDRESS}")
+                
+                # Conectar à blockchain
+                print("Conectando à blockchain...")
+                import urllib3
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                
+                w3 = Web3(Web3.HTTPProvider(
+                    RPC_URL,
+                    request_kwargs={'verify': False}
+                ))
+                
+                if not w3.is_connected():
+                    print("❌ Falha ao conectar blockchain")
+                    results.append({
+                        'success': False,
+                        'error': 'Failed to connect to blockchain',
+                        'message_group': message_group_id
+                    })
+                    continue
+                
+                print(f"✅ Conectado! Chain ID: {w3.eth.chain_id}")
+                
+                # Carregar contrato
+                contract = w3.eth.contract(
+                    address=Web3.to_checksum_address(CONTRACT_ADDRESS),
+                    abi=CONTRACT_ABI
+                )
+                
+                # Configurar conta
+                account = w3.eth.account.from_key(PRIVATE_KEY)
+                
+                # Preparar dados (extrair 'record' do message_body)
+                record_data = message_body.get('record', {})
+                vehicle_data = prepare_vehicle_data(record_data)
+                
+                print(f"Distância rodovia: {vehicle_data[0]} km")
+                print(f"Distância cidade: {vehicle_data[1]} km")
                 
                 # Invocar contrato
                 result = invoke_smart_contract(w3, contract, account, vehicle_data)
                 
                 if result['success']:
-                    print(f"  ✅ E1 calculado: {result['e1_value']:.6f} BRL")
+                    print(f"✅ E1 calculado: {result['e1_value']:.6f} BRL")
+                    result['message_group'] = message_group_id
                     results.append(result)
                 else:
-                    print(f"  ❌ Erro: {result['error']}")
+                    print(f"❌ Erro: {result['error']}")
+                    result['message_group'] = message_group_id
                     results.append(result)
                     
             except Exception as e:
-                print(f"  ❌ Erro ao processar registro: {str(e)}")
+                print(f"❌ Erro ao processar mensagem: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 results.append({
                     'success': False,
                     'error': str(e),
+                    'message_group': message_group_id,
                     'record_index': idx
                 })
         
-        # Calcular estatísticas
+        # Resumo
         successful = [r for r in results if r.get('success')]
         failed = [r for r in results if not r.get('success')]
         
         total_gas = sum(r.get('gas_used', 0) for r in successful)
         total_e1 = sum(r.get('e1_value', 0) for r in successful)
         
-        response = {
-            'statusCode': 200 if len(failed) == 0 else 207,  # 207 = Multi-Status
+        print(f"\n{'='*60}")
+        print("=== Processamento Concluído ===")
+        print(f"Sucesso: {len(successful)}/{len(records)}")
+        print(f"Total E1: {total_e1:.6f} BRL")
+        print(f"Total Gas: {total_gas:,}")
+        print(f"{'='*60}")
+        
+        return {
+            'statusCode': 200 if len(failed) == 0 else 207,
             'body': json.dumps({
                 'message': 'Processing completed',
                 'summary': {
@@ -260,12 +286,6 @@ def lambda_handler(event, context):
                 'results': results
             })
         }
-        
-        print(f"\n=== Processamento Concluído ===")
-        print(f"Sucesso: {len(successful)}/{len(records)}")
-        print(f"Total E1: {total_e1:.6f} BRL")
-        
-        return response
         
     except Exception as e:
         print(f"❌ Erro fatal: {str(e)}")

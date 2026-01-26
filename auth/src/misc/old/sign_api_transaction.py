@@ -1,4 +1,3 @@
-"""
 Script para assinar transação retornada pela API /compile-contract/
 
 IMPORTANTE: Este script assina a transação LOCALMENTE
