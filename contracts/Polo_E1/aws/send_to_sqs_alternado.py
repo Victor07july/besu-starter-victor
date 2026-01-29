@@ -1,6 +1,6 @@
 """
-Script para enviar dados alternando entre os 2 CSVs
-Envia 1 linha do CSV1, depois 1 linha do CSV2, e repete
+Script para enviar dados alternando entre os 16 CSVs
+Envia 1 linha do CSV1, depois 1 do CSV2, ..., até CSV16, e repete
 """
 
 import pandas as pd
@@ -12,17 +12,87 @@ from pathlib import Path
 # Configuração API Gateway
 API_GATEWAY_URL = "https://r3zt1dfiej.execute-api.us-east-1.amazonaws.com/default"
 
-# Arquivos CSV e seus Message Groups
+# Arquivos CSV e seus Message Groups (16 grupos)
 CSV_FILES = [
     {
-        "file": "../compile_deploy_interact/vehicle_data_1.csv",
+        "file": "../data/vehicle_data_1.csv",
         "message_group": "vehicle_group_1",
         "description": "Veículo 1"
     },
     {
-        "file": "../compile_deploy_interact/vehicle_data_2.csv",
+        "file": "../data/vehicle_data_2.csv",
         "message_group": "vehicle_group_2",
         "description": "Veículo 2"
+    },
+    {
+        "file": "../data/vehicle_data_3.csv",
+        "message_group": "vehicle_group_3",
+        "description": "Veículo 3"
+    },
+    {
+        "file": "../data/vehicle_data_4.csv",
+        "message_group": "vehicle_group_4",
+        "description": "Veículo 4"
+    },
+    {
+        "file": "../data/vehicle_data_5.csv",
+        "message_group": "vehicle_group_5",
+        "description": "Veículo 5"
+    },
+    {
+        "file": "../data/vehicle_data_6.csv",
+        "message_group": "vehicle_group_6",
+        "description": "Veículo 6"
+    },
+    {
+        "file": "../data/vehicle_data_7.csv",
+        "message_group": "vehicle_group_7",
+        "description": "Veículo 7"
+    },
+    {
+        "file": "../data/vehicle_data_8.csv",
+        "message_group": "vehicle_group_8",
+        "description": "Veículo 8"
+    },
+    {
+        "file": "../data/vehicle_data_9.csv",
+        "message_group": "vehicle_group_9",
+        "description": "Veículo 9"
+    },
+    {
+        "file": "../data/vehicle_data_10.csv",
+        "message_group": "vehicle_group_10",
+        "description": "Veículo 10"
+    },
+    {
+        "file": "../data/vehicle_data_11.csv",
+        "message_group": "vehicle_group_11",
+        "description": "Veículo 11"
+    },
+    {
+        "file": "../data/vehicle_data_12.csv",
+        "message_group": "vehicle_group_12",
+        "description": "Veículo 12"
+    },
+    {
+        "file": "../data/vehicle_data_13.csv",
+        "message_group": "vehicle_group_13",
+        "description": "Veículo 13"
+    },
+    {
+        "file": "../data/vehicle_data_14.csv",
+        "message_group": "vehicle_group_14",
+        "description": "Veículo 14"
+    },
+    {
+        "file": "../data/vehicle_data_15.csv",
+        "message_group": "vehicle_group_15",
+        "description": "Veículo 15"
+    },
+    {
+        "file": "../data/vehicle_data_16.csv",
+        "message_group": "vehicle_group_16",
+        "description": "Veículo 16"
     }
 ]
 
@@ -78,11 +148,12 @@ def send_record_to_api(record, message_group, description):
 
 
 def main():
-    """Processa os 2 CSVs alternando linha por linha"""
+    """Processa os 16 CSVs alternando linha por linha"""
     print("\n🚀 Enviando dados alternados (1 linha de cada CSV por vez)")
-    print(f"📍 API Gateway: {API_GATEWAY_URL}\n")
+    print(f"📍 API Gateway: {API_GATEWAY_URL}")
+    print(f"🔢 Total de grupos: {len(CSV_FILES)}\n")
     
-    # Carregar os 2 CSVs
+    # Carregar os 16 CSVs
     base_path = Path(__file__).parent
     dfs = []
     

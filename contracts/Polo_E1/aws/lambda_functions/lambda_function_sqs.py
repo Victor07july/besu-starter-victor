@@ -13,10 +13,24 @@ from botocore.exceptions import ClientError
 secrets_client = boto3.client('secretsmanager')
 
 # Mapeamento de Message Groups para Secrets
-# Usando contas do genesis.json que já têm saldo
+# 16 grupos paralelos para processamento simultâneo
 MESSAGE_GROUP_TO_SECRET = {
-    'vehicle_group_1': 'besu-blockchain-keys-group1',  # 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
-    'vehicle_group_2': 'besu-blockchain-keys-group2'   # 0xf17f52151EbEF6C7334FAD080c5704D77216b732
+    'vehicle_group_1': 'besu-blockchain-keys-group1',
+    'vehicle_group_2': 'besu-blockchain-keys-group2',
+    'vehicle_group_3': 'besu-blockchain-keys-group3',
+    'vehicle_group_4': 'besu-blockchain-keys-group4',
+    'vehicle_group_5': 'besu-blockchain-keys-group5',
+    'vehicle_group_6': 'besu-blockchain-keys-group6',
+    'vehicle_group_7': 'besu-blockchain-keys-group7',
+    'vehicle_group_8': 'besu-blockchain-keys-group8',
+    'vehicle_group_9': 'besu-blockchain-keys-group9',
+    'vehicle_group_10': 'besu-blockchain-keys-group10',
+    'vehicle_group_11': 'besu-blockchain-keys-group11',
+    'vehicle_group_12': 'besu-blockchain-keys-group12',
+    'vehicle_group_13': 'besu-blockchain-keys-group13',
+    'vehicle_group_14': 'besu-blockchain-keys-group14',
+    'vehicle_group_15': 'besu-blockchain-keys-group15',
+    'vehicle_group_16': 'besu-blockchain-keys-group16'
 }
 
 # ABI do contrato
