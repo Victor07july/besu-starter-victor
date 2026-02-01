@@ -1,0 +1,3 @@
+VIN,model,brand,ethanol (%),highway (distance),city (distance),behavior_cautious (%),behavior_normal (%),behavior_aggressive (%)
+93XATGK1WSCR19187,Eclipse Cross,Mitsubishi,0,1.807029,4.122286,59.238095,9.904762,30.857143
+5YFER4W7XLZ482059,Corolla,Toyota,30,5.5,8.3,70,20,10
