@@ -1,6 +1,6 @@
 """
-Script para enviar dados alternando entre os 16 CSVs
-Envia 1 linha do CSV1, depois 1 do CSV2, ..., até CSV16, e repete
+Script para enviar dados alternando entre os 64 CSVs
+Envia 1 linha do CSV1, depois 1 do CSV2, ..., até CSV64, e repete
 """
 
 import pandas as pd
@@ -12,89 +12,14 @@ from pathlib import Path
 # Configuração API Gateway
 API_GATEWAY_URL = "https://r3zt1dfiej.execute-api.us-east-1.amazonaws.com/default"
 
-# Arquivos CSV e seus Message Groups (16 grupos)
-CSV_FILES = [
-    {
-        "file": "../data/vehicle_data_1.csv",
-        "message_group": "vehicle_group_1",
-        "description": "Veículo 1"
-    },
-    {
-        "file": "../data/vehicle_data_2.csv",
-        "message_group": "vehicle_group_2",
-        "description": "Veículo 2"
-    },
-    {
-        "file": "../data/vehicle_data_3.csv",
-        "message_group": "vehicle_group_3",
-        "description": "Veículo 3"
-    },
-    {
-        "file": "../data/vehicle_data_4.csv",
-        "message_group": "vehicle_group_4",
-        "description": "Veículo 4"
-    },
-    {
-        "file": "../data/vehicle_data_5.csv",
-        "message_group": "vehicle_group_5",
-        "description": "Veículo 5"
-    },
-    {
-        "file": "../data/vehicle_data_6.csv",
-        "message_group": "vehicle_group_6",
-        "description": "Veículo 6"
-    },
-    {
-        "file": "../data/vehicle_data_7.csv",
-        "message_group": "vehicle_group_7",
-        "description": "Veículo 7"
-    },
-    {
-        "file": "../data/vehicle_data_8.csv",
-        "message_group": "vehicle_group_8",
-        "description": "Veículo 8"
-    },
-    {
-        "file": "../data/vehicle_data_9.csv",
-        "message_group": "vehicle_group_9",
-        "description": "Veículo 9"
-    },
-    {
-        "file": "../data/vehicle_data_10.csv",
-        "message_group": "vehicle_group_10",
-        "description": "Veículo 10"
-    },
-    {
-        "file": "../data/vehicle_data_11.csv",
-        "message_group": "vehicle_group_11",
-        "description": "Veículo 11"
-    },
-    {
-        "file": "../data/vehicle_data_12.csv",
-        "message_group": "vehicle_group_12",
-        "description": "Veículo 12"
-    },
-    {
-        "file": "../data/vehicle_data_13.csv",
-        "message_group": "vehicle_group_13",
-        "description": "Veículo 13"
-    },
-    {
-        "file": "../data/vehicle_data_14.csv",
-        "message_group": "vehicle_group_14",
-        "description": "Veículo 14"
-    },
-    {
-        "file": "../data/vehicle_data_15.csv",
-        "message_group": "vehicle_group_15",
-        "description": "Veículo 15"
-    },
-    {
-        "file": "../data/vehicle_data_16.csv",
-        "message_group": "vehicle_group_16",
-        "description": "Veículo 16"
-    }
-]
+# Gerar lista de 64 CSVs dinamicamente
+CSV_FILES = []
+for i in range(1, 65):
+    CSV_FILES.append({
+        "file": f"../data/vehicle_data_{i}.csv",
+        "message_group": f"vehicle_group_{i}",
+        "description": f"Veículo {i}"
+    })
 
 REQUEST_TIMEOUT = 30
 
@@ -148,12 +73,12 @@ def send_record_to_api(record, message_group, description):
 
 
 def main():
-    """Processa os 16 CSVs alternando linha por linha"""
+    """Processa os 64 CSVs alternando linha por linha"""
     print("\n🚀 Enviando dados alternados (1 linha de cada CSV por vez)")
     print(f"📍 API Gateway: {API_GATEWAY_URL}")
     print(f"🔢 Total de grupos: {len(CSV_FILES)}\n")
     
-    # Carregar os 16 CSVs
+    # Carregar os 64 CSVs
     base_path = Path(__file__).parent
     dfs = []
     
@@ -170,7 +95,11 @@ def main():
             'sent': 0,
             'failed': 0
         })
-        print(f"📄 {csv_config['description']}: {len(df)} registros")
+        # Mostrar apenas primeiros 5 e últimos 5
+        if len(dfs) <= 5 or len(dfs) > len(CSV_FILES) - 5:
+            print(f"📄 {csv_config['description']}: {len(df)} registros")
+        elif len(dfs) == 6:
+            print(f"   ... ({len(CSV_FILES) - 10} CSVs adicionais)")
     
     print(f"\n{'='*60}")
     
@@ -220,11 +149,15 @@ def main():
     print(f"🎉 Processamento concluído!")
     print(f"{'='*60}")
     
-    for df_info in dfs:
+    # Mostrar resumo apenas dos primeiros 3 e últimos 3
+    for idx, df_info in enumerate(dfs):
         config = df_info['config']
-        print(f"{config['description']}:")
-        print(f"  ✅ Enviados: {df_info['sent']}")
-        print(f"  ❌ Falhas: {df_info['failed']}")
+        if idx < 3 or idx >= len(dfs) - 3:
+            print(f"{config['description']}:")
+            print(f"  ✅ Enviados: {df_info['sent']}")
+            print(f"  ❌ Falhas: {df_info['failed']}")
+        elif idx == 3:
+            print(f"   ... ({len(dfs) - 6} grupos adicionais)")
     
     print(f"\nTotal:")
     print(f"  ✅ Enviados: {total_sent}")

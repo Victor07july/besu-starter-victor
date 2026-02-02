@@ -13,7 +13,7 @@ from botocore.exceptions import ClientError
 secrets_client = boto3.client('secretsmanager')
 
 # Mapeamento de Message Groups para Secrets
-# 16 grupos paralelos para processamento simultâneo
+# 64 grupos paralelos para processamento simultâneo
 MESSAGE_GROUP_TO_SECRET = {
     'vehicle_group_1': 'besu-blockchain-keys-group1',
     'vehicle_group_2': 'besu-blockchain-keys-group2',
@@ -30,7 +30,55 @@ MESSAGE_GROUP_TO_SECRET = {
     'vehicle_group_13': 'besu-blockchain-keys-group13',
     'vehicle_group_14': 'besu-blockchain-keys-group14',
     'vehicle_group_15': 'besu-blockchain-keys-group15',
-    'vehicle_group_16': 'besu-blockchain-keys-group16'
+    'vehicle_group_16': 'besu-blockchain-keys-group16',
+    'vehicle_group_17': 'besu-blockchain-keys-group17',
+    'vehicle_group_18': 'besu-blockchain-keys-group18',
+    'vehicle_group_19': 'besu-blockchain-keys-group19',
+    'vehicle_group_20': 'besu-blockchain-keys-group20',
+    'vehicle_group_21': 'besu-blockchain-keys-group21',
+    'vehicle_group_22': 'besu-blockchain-keys-group22',
+    'vehicle_group_23': 'besu-blockchain-keys-group23',
+    'vehicle_group_24': 'besu-blockchain-keys-group24',
+    'vehicle_group_25': 'besu-blockchain-keys-group25',
+    'vehicle_group_26': 'besu-blockchain-keys-group26',
+    'vehicle_group_27': 'besu-blockchain-keys-group27',
+    'vehicle_group_28': 'besu-blockchain-keys-group28',
+    'vehicle_group_29': 'besu-blockchain-keys-group29',
+    'vehicle_group_30': 'besu-blockchain-keys-group30',
+    'vehicle_group_31': 'besu-blockchain-keys-group31',
+    'vehicle_group_32': 'besu-blockchain-keys-group32',
+    'vehicle_group_33': 'besu-blockchain-keys-group33',
+    'vehicle_group_34': 'besu-blockchain-keys-group34',
+    'vehicle_group_35': 'besu-blockchain-keys-group35',
+    'vehicle_group_36': 'besu-blockchain-keys-group36',
+    'vehicle_group_37': 'besu-blockchain-keys-group37',
+    'vehicle_group_38': 'besu-blockchain-keys-group38',
+    'vehicle_group_39': 'besu-blockchain-keys-group39',
+    'vehicle_group_40': 'besu-blockchain-keys-group40',
+    'vehicle_group_41': 'besu-blockchain-keys-group41',
+    'vehicle_group_42': 'besu-blockchain-keys-group42',
+    'vehicle_group_43': 'besu-blockchain-keys-group43',
+    'vehicle_group_44': 'besu-blockchain-keys-group44',
+    'vehicle_group_45': 'besu-blockchain-keys-group45',
+    'vehicle_group_46': 'besu-blockchain-keys-group46',
+    'vehicle_group_47': 'besu-blockchain-keys-group47',
+    'vehicle_group_48': 'besu-blockchain-keys-group48',
+    'vehicle_group_49': 'besu-blockchain-keys-group49',
+    'vehicle_group_50': 'besu-blockchain-keys-group50',
+    'vehicle_group_51': 'besu-blockchain-keys-group51',
+    'vehicle_group_52': 'besu-blockchain-keys-group52',
+    'vehicle_group_53': 'besu-blockchain-keys-group53',
+    'vehicle_group_54': 'besu-blockchain-keys-group54',
+    'vehicle_group_55': 'besu-blockchain-keys-group55',
+    'vehicle_group_56': 'besu-blockchain-keys-group56',
+    'vehicle_group_57': 'besu-blockchain-keys-group57',
+    'vehicle_group_58': 'besu-blockchain-keys-group58',
+    'vehicle_group_59': 'besu-blockchain-keys-group59',
+    'vehicle_group_60': 'besu-blockchain-keys-group60',
+    'vehicle_group_61': 'besu-blockchain-keys-group61',
+    'vehicle_group_62': 'besu-blockchain-keys-group62',
+    'vehicle_group_63': 'besu-blockchain-keys-group63',
+    'vehicle_group_64': 'besu-blockchain-keys-group64'
 }
 
 # ABI do contrato
