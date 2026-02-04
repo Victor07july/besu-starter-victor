@@ -1,6 +1,7 @@
 """
 Script para enviar dados alternando entre os 64 CSVs
-Envia 1 linha do CSV1, depois 1 do CSV2, ..., até CSV64, e repete
+Envia 1 linha de cada CSV em PARALELO (64 simultâneas)
+Cada linha é repetida 10 vezes antes de passar para próxima
 """
 
 import pandas as pd
@@ -8,6 +9,8 @@ import requests
 import json
 import time
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Lock
 
 # Configuração API Gateway
 API_GATEWAY_URL = "https://r3zt1dfiej.execute-api.us-east-1.amazonaws.com/default"
@@ -21,7 +24,11 @@ for i in range(1, 65):
         "description": f"Veículo {i}"
     })
 
-REQUEST_TIMEOUT = 30
+REQUEST_TIMEOUT = 60  # Aumentar para 60s
+MAX_RETRIES = 3  # Tentar até 3 vezes se der timeout
+
+# Lock para sincronizar prints
+print_lock = Lock()
 
 
 def prepare_record(row):
@@ -42,39 +49,84 @@ def prepare_record(row):
 
 
 def send_record_to_api(record, message_group, description):
-    """Envia 1 registro para o API Gateway"""
-    try:
-        payload = {
-            "records": [record],  # Apenas 1 registro
-            "message_group": message_group
-        }
-        
-        response = requests.post(
-            API_GATEWAY_URL,
-            json=payload,
-            timeout=REQUEST_TIMEOUT
-        )
-        
-        response.raise_for_status()
-        result = response.json()
-        
-        # Lambda retorna body como string JSON
-        if 'body' in result:
-            body = json.loads(result['body'])
-            sent_count = body.get('sent', 0)
-        else:
-            sent_count = result.get('sent', 0)
-        
-        return sent_count > 0
-        
-    except Exception as e:
-        print(f"❌ {description}: Erro - {str(e)}")
-        return False
+    """Envia 1 registro para o API Gateway com retry automático"""
+    payload = {
+        "records": [record],  # Apenas 1 registro
+        "message_group": message_group
+    }
+    
+    last_error = None
+    
+    # Tentar até MAX_RETRIES vezes
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = requests.post(
+                API_GATEWAY_URL,
+                json=payload,
+                timeout=REQUEST_TIMEOUT
+            )
+            
+            response.raise_for_status()
+            result = response.json()
+            
+            # Lambda retorna body como string JSON
+            if 'body' in result:
+                body = json.loads(result['body'])
+                sent_count = body.get('sent', 0)
+            else:
+                sent_count = result.get('sent', 0)
+            
+            return sent_count > 0
+            
+        except requests.exceptions.Timeout as e:
+            last_error = f"Timeout (tentativa {attempt+1}/{MAX_RETRIES})"
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(2)  # Aguardar 2s antes de retry
+                continue
+            
+        except Exception as e:
+            last_error = str(e)
+            break  # Outros erros não fazem retry
+    
+    # Se chegou aqui, todas as tentativas falharam
+    with print_lock:
+        print(f"❌ {description}: {last_error}")
+    return False
+
+
+def process_line_worker(df_info, line_index, repetition):
+    """
+    Worker que processa uma linha de um CSV específico
+    Envia 1 repetição da linha
+    """
+    df = df_info['df']
+    config = df_info['config']
+    
+    # Verificar se linha existe
+    if line_index >= len(df):
+        return None
+    
+    row = df.iloc[line_index]
+    record = prepare_record(row)
+    
+    description = config['description']
+    message_group = config['message_group']
+    
+    success = send_record_to_api(record, message_group, description)
+    
+    return {
+        'df_info': df_info,
+        'config': config,
+        'success': success,
+        'description': description,
+        'line_index': line_index,
+        'repetition': repetition
+    }
 
 
 def main():
-    """Processa os 64 CSVs alternando linha por linha"""
-    print("\n🚀 Enviando dados alternados (1 linha de cada CSV por vez)")
+    """Processa os 64 CSVs em PARALELO"""
+    print("\n🚀 Enviando dados em PARALELO (64 workers simultâneos)")
     print(f"📍 API Gateway: {API_GATEWAY_URL}")
     print(f"🔢 Total de grupos: {len(CSV_FILES)}\n")
     
@@ -102,46 +154,76 @@ def main():
             print(f"   ... ({len(CSV_FILES) - 10} CSVs adicionais)")
     
     print(f"\n{'='*60}")
+    print(f"⚡ Iniciando processamento PARALELO com {len(CSV_FILES)} threads")
+    print(f"{'='*60}\n")
     
     # Processar alternando entre os CSVs
     max_rows = max(len(d['df']) for d in dfs)
     start_time = time.time()
+    total_requests = 0
     
-    for i in range(max_rows):
-        # Processar 1 linha de cada CSV
-        for df_info in dfs:
-            df = df_info['df']
-            config = df_info['config']
-            
-            # Pular se este CSV já acabou
-            if i >= len(df):
-                continue
-            
-            row = df.iloc[i]
-            record = prepare_record(row)
-            
-            description = config['description']
-            message_group = config['message_group']
-            
-            # REPETIR 10 VEZES a mesma linha
-            for repetition in range(10):
-                success = send_record_to_api(record, message_group, description)
-                
-                if success:
-                    df_info['sent'] += 1
-                    if repetition == 0 or repetition == 9:  # Mostrar apenas primeira e última repetição
-                        print(f"✅ {description}: registro {i+1}/{len(df)} (rep {repetition+1}/10)")
-                else:
-                    df_info['failed'] += 1
-                    print(f"❌ {description}: falha no registro {i+1}/{len(df)} (rep {repetition+1}/10)")
-                
-                # Pequena pausa entre envios
-                time.sleep(0.1)
+    # Usar ThreadPoolExecutor para paralelização
+    with ThreadPoolExecutor(max_workers=len(CSV_FILES)) as executor:
         
-        # Mostrar progresso a cada 10 linhas
-        if (i + 1) % 10 == 0:
-            elapsed = time.time() - start_time
-            print(f"\n📊 Progresso: {i+1}/{max_rows} linhas processadas ({elapsed:.1f}s)\n")
+        for line_index in range(max_rows):
+            line_start = time.time()
+            
+            # Para cada repetição (10x)
+            for repetition in range(10):
+                futures = []
+                
+                # Enviar 1 requisição de cada CSV em PARALELO
+                for df_info in dfs:
+                    if line_index < len(df_info['df']):
+                        future = executor.submit(
+                            process_line_worker,
+                            df_info,
+                            line_index,
+                            repetition
+                        )
+                        futures.append(future)
+                
+                # Aguardar todas as 64 requisições completarem
+                rep_start = time.time()
+                completed = 0
+                success_count = 0
+                failed_vehicles = []
+                
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result:
+                        vehicle_num = result['config']['message_group'].split('_')[-1]  # Extrair número do grupo
+                        if result['success']:
+                            result['df_info']['sent'] += 1
+                            success_count += 1
+                        else:
+                            result['df_info']['failed'] += 1
+                            failed_vehicles.append(vehicle_num)
+                        completed += 1
+                        total_requests += 1
+                
+                # Log de TODAS as repetições
+                rep_time = time.time() - rep_start
+                with print_lock:
+                    if failed_vehicles:
+                        # Ordenar veículos que falharam
+                        failed_vehicles.sort(key=int)
+                        if len(failed_vehicles) <= 10:
+                            # Mostrar todos
+                            failed_str = f"V{','.join(failed_vehicles)}"
+                        else:
+                            # Mostrar primeiros 10 + contador
+                            failed_str = f"V{','.join(failed_vehicles[:10])} (e mais {len(failed_vehicles)-10})"
+                        print(f"⚡ Linha {line_index+1}/{max_rows} - Rep {repetition+1}/10: ✅ {success_count} OK | ❌ {len(failed_vehicles)} FALHAS [{failed_str}] - {rep_time:.1f}s")
+                    else:
+                        print(f"⚡ Linha {line_index+1}/{max_rows} - Rep {repetition+1}/10: ✅ {completed} carteiras OK - {rep_time:.1f}s")
+            
+            # Progresso a cada 10 linhas
+            if (line_index + 1) % 10 == 0:
+                elapsed = time.time() - start_time
+                rate = total_requests / elapsed if elapsed > 0 else 0
+                with print_lock:
+                    print(f"\n📊 Progresso: {line_index+1}/{max_rows} linhas | {total_requests:,} requisições | {rate:.1f} req/s | {elapsed:.1f}s\n")
     
     # Resumo final
     elapsed_time = time.time() - start_time
