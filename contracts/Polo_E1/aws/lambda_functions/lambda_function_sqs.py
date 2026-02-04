@@ -6,6 +6,7 @@ Versão SQS: Consome mensagens do SQS FIFO com Message Groups
 import json
 import boto3
 import os
+import time
 from web3 import Web3
 from botocore.exceptions import ClientError
 
@@ -226,6 +227,9 @@ def lambda_handler(event, context):
         results = []
         
         for idx, record in enumerate(records):
+            # Capturar tempo de início para métricas
+            start_time = time.time()
+            
             print(f"\n{'='*60}")
             print(f"Mensagem {idx + 1}/{len(records)}")
             print(f"{'='*60}")
@@ -300,17 +304,33 @@ def lambda_handler(event, context):
                 # Invocar contrato
                 result = invoke_smart_contract(w3, contract, account, vehicle_data)
                 
+                # Calcular duração e registrar métrica
+                duration = time.time() - start_time
+                wallet = account.address
+                tx_hash = result.get('tx_hash', 'unknown')
+                gas_used = result.get('gas_used', 0)
+                
                 if result['success']:
                     print(f"✅ E1 calculado: {result['e1_value']:.6f} BRL")
+                    print(f"METRIC|{wallet}|{tx_hash}|{duration:.3f}|{gas_used}|success")
                     result['message_group'] = message_group_id
                     results.append(result)
                 else:
                     print(f"❌ Erro: {result['error']}")
+                    print(f"METRIC|{wallet}|error|{duration:.3f}|0|failed")
                     result['message_group'] = message_group_id
                     results.append(result)
                     
             except Exception as e:
+                # Registrar métrica de erro
+                duration = time.time() - start_time
+                try:
+                    wallet = account.address if 'account' in locals() else 'unknown'
+                except:
+                    wallet = 'unknown'
+                
                 print(f"❌ Erro ao processar mensagem: {str(e)}")
+                print(f"METRIC|{wallet}|error|{duration:.3f}|0|exception")
                 import traceback
                 traceback.print_exc()
                 results.append({

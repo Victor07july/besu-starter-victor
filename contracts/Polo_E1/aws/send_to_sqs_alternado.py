@@ -123,17 +123,20 @@ def main():
             description = config['description']
             message_group = config['message_group']
             
-            success = send_record_to_api(record, message_group, description)
-            
-            if success:
-                df_info['sent'] += 1
-                print(f"✅ {description}: registro {i+1}/{len(df)}")
-            else:
-                df_info['failed'] += 1
-                print(f"❌ {description}: falha no registro {i+1}/{len(df)}")
-            
-            # Pequena pausa entre envios
-            time.sleep(0.1)
+            # REPETIR 10 VEZES a mesma linha
+            for repetition in range(10):
+                success = send_record_to_api(record, message_group, description)
+                
+                if success:
+                    df_info['sent'] += 1
+                    if repetition == 0 or repetition == 9:  # Mostrar apenas primeira e última repetição
+                        print(f"✅ {description}: registro {i+1}/{len(df)} (rep {repetition+1}/10)")
+                else:
+                    df_info['failed'] += 1
+                    print(f"❌ {description}: falha no registro {i+1}/{len(df)} (rep {repetition+1}/10)")
+                
+                # Pequena pausa entre envios
+                time.sleep(0.1)
         
         # Mostrar progresso a cada 10 linhas
         if (i + 1) % 10 == 0:
