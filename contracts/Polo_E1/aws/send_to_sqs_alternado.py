@@ -1,7 +1,7 @@
 """
 Script para enviar dados alternando entre os 64 CSVs
 Envia 1 linha de cada CSV em PARALELO (64 simultâneas)
-Cada linha é repetida 10 vezes antes de passar para próxima
+Cada linha pode ser repetida N vezes (configurável)
 """
 
 import pandas as pd
@@ -11,9 +11,14 @@ import time
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
+import sys
 
 # Configuração API Gateway
 API_GATEWAY_URL = "https://r3zt1dfiej.execute-api.us-east-1.amazonaws.com/default"
+
+# ⚙️ CONFIGURAÇÃO: Número de repetições por linha
+# Altere este valor ou passe como argumento: python send_to_sqs_alternado.py 5
+REPETITIONS_PER_LINE = 10  # Padrão: 10 repetições
 
 # Gerar lista de 64 CSVs dinamicamente
 CSV_FILES = []
@@ -126,9 +131,23 @@ def process_line_worker(df_info, line_index, repetition):
 
 def main():
     """Processa os 64 CSVs em PARALELO"""
+    
+    # Verificar se passou repetições como argumento
+    global REPETITIONS_PER_LINE
+    if len(sys.argv) > 1:
+        try:
+            REPETITIONS_PER_LINE = int(sys.argv[1])
+        except ValueError:
+            print(f"❌ Argumento inválido: {sys.argv[1]}")
+            print("Uso: python send_to_sqs_alternado.py [REPETITIONS]")
+            print("Exemplo: python send_to_sqs_alternado.py 1  (sem repetição)")
+            print("Exemplo: python send_to_sqs_alternado.py 10 (repetir 10x)")
+            return
+    
     print("\n🚀 Enviando dados em PARALELO (64 workers simultâneos)")
     print(f"📍 API Gateway: {API_GATEWAY_URL}")
-    print(f"🔢 Total de grupos: {len(CSV_FILES)}\n")
+    print(f"🔢 Total de grupos: {len(CSV_FILES)}")
+    print(f"🔁 Repetições por linha: {REPETITIONS_PER_LINE}x\n")
     
     # Carregar os 64 CSVs
     base_path = Path(__file__).parent
@@ -168,8 +187,8 @@ def main():
         for line_index in range(max_rows):
             line_start = time.time()
             
-            # Para cada repetição (10x)
-            for repetition in range(10):
+            # Para cada repetição (configurável)
+            for repetition in range(REPETITIONS_PER_LINE):
                 futures = []
                 
                 # Enviar 1 requisição de cada CSV em PARALELO
@@ -214,9 +233,9 @@ def main():
                         else:
                             # Mostrar primeiros 10 + contador
                             failed_str = f"V{','.join(failed_vehicles[:10])} (e mais {len(failed_vehicles)-10})"
-                        print(f"⚡ Linha {line_index+1}/{max_rows} - Rep {repetition+1}/10: ✅ {success_count} OK | ❌ {len(failed_vehicles)} FALHAS [{failed_str}] - {rep_time:.1f}s")
+                        print(f"⚡ Linha {line_index+1}/{max_rows} - Rep {repetition+1}/{REPETITIONS_PER_LINE}: ✅ {success_count} OK | ❌ {len(failed_vehicles)} FALHAS [{failed_str}] - {rep_time:.1f}s")
                     else:
-                        print(f"⚡ Linha {line_index+1}/{max_rows} - Rep {repetition+1}/10: ✅ {completed} carteiras OK - {rep_time:.1f}s")
+                        print(f"⚡ Linha {line_index+1}/{max_rows} - Rep {repetition+1}/{REPETITIONS_PER_LINE}: ✅ {completed} carteiras OK - {rep_time:.1f}s")
             
             # Progresso a cada 10 linhas
             if (line_index + 1) % 10 == 0:

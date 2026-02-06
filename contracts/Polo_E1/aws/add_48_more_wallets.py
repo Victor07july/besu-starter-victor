@@ -18,7 +18,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Configurações da Blockchain
-BESU_URL = "https://ec2-18-117-255-42.us-east-2.compute.amazonaws.com/user/"
+BESU_URL = "https://ec2-18-218-85-118.us-east-2.compute.amazonaws.com/user/"
 CHAIN_ID = 1337
 
 # Carteira mãe (genesis.json)
