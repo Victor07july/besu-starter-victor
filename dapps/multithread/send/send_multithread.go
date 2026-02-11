@@ -44,6 +44,9 @@ const (
 	// Número de workers/carteiras em paralelo
 	NumWorkers = 8
 
+	// Número máximo de linhas a serem lidas do CSV (0 = sem limite)
+	MaxRowsToRead = 1000
+
 	// Timeout para aguardar confirmação de transações
 	TxTimeout = 120 * time.Second
 )
@@ -737,6 +740,12 @@ func main() {
 	rows, err := readCSV(csvPath)
 	if err != nil {
 		log.Fatalf("❌ Erro ao ler CSV: %v", err)
+	}
+
+	// Limitar número de linhas se configurado
+	if MaxRowsToRead > 0 && len(rows) > MaxRowsToRead {
+		fmt.Printf("Limitando de %d para %d linhas conforme configuração\n", len(rows), MaxRowsToRead)
+		rows = rows[:MaxRowsToRead]
 	}
 
 	fmt.Printf("✅ CSV carregado: %d linhas\n", len(rows))
