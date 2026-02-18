@@ -42,7 +42,7 @@ const (
 	WalletsJSON = "wallets_64_groups.json"
 
 	// Número de workers/carteiras em paralelo
-	NumWorkers = 8
+	NumWorkers = 64
 
 	// Número máximo de linhas a serem lidas do CSV (0 = sem limite)
 	MaxRowsToRead = 1000
