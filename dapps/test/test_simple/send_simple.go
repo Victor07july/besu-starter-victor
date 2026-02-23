@@ -30,7 +30,7 @@ import (
 // ======================================================================
 
 const (
-	RPCURL         = "https://ec2-3-136-84-125.us-east-2.compute.amazonaws.com/user/"
+	RPCURL         = "https://ec2-3-15-222-123.us-east-2.compute.amazonaws.com/user/"
 	DeploymentJSON = "../simple_counter_deployment.json"
 	WalletsJSON    = "./wallets_64_groups.json"
 	DataCSV        = "./dados_gas.csv"

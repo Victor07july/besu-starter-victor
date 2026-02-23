@@ -14,7 +14,7 @@ from pathlib import Path
 # ====================================================================
 
 # URL do nó RPC Besu
-RPC_URL = "https://ec2-3-136-84-125.us-east-2.compute.amazonaws.com/user/"
+RPC_URL = "https://ec2-3-15-222-123.us-east-2.compute.amazonaws.com/user/"
 
 # Chave privada da carteira que fará o deploy
 # IMPORTANTE: Use uma carteira autorizada na blockchain
