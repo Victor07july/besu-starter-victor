@@ -1,0 +1,2 @@
+vin,trip_id,timestamp,start_lat_private,start_lon_private,end_lat_private,end_lon_private,start_elevation,end_elevation,total_distance_km,avg_speed,ethanol_percent,fuel_rate_avg,trip_duration,num_samples
+VEHICLE_001,1,1705681531,-23.0349128,-44.5548666,-22.9694087,-44.4402974,4,6,23.87358240471053,70.74597867911436,29.526719251876617,4.3615623859332615,1367.305,15853

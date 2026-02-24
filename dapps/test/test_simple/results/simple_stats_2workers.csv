@@ -1,3 +1,0 @@
-worker_id,total_txs,successful_txs,failed_txs,duration_s,avg_latency_ms,min_latency_ms,max_latency_ms,throughput_tx_s
-2,100,100,0,269.38,2693.74,2535.16,3204.38,0.37
-1,100,100,0,267.98,2679.80,2532.88,3204.38,0.37
