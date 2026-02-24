@@ -34,7 +34,7 @@ const (
 	DeploymentJSON = "../simple_counter_deployment.json"
 	WalletsJSON    = "./wallets_64_groups.json"
 	DataCSV        = "./dados_gas.csv"
-	NumWorkers     = 512 // Comece com 2 para teste rápido
+	NumWorkers     = 1024  // Comece com 2 para teste rápido
 	MaxRowsToRead  = 100 // Teste rápido com 100 transações
 	TxTimeout      = 120 * time.Second
 )
