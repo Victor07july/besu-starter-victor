@@ -1,0 +1,6 @@
+VIN,Modelo,Distancia_SUMO_km,Distancia_Trajeto_Original_km,Distancia_Trajeto_com_Offset_km,Diferenca_Distancia_km,Num_Pontos,Start_Lat_Original,Start_Lon_Original,End_Lat_Original,End_Lon_Original,Start_Lat_com_Offset,Start_Lon_com_Offset,End_Lat_com_Offset,End_Lon_com_Offset,Diferenca_Distancia_Percentual
+SUMO_veh0,HBEFA4/PC_petrol_Euro-6ab,0.3921,1.2373,1.4428,0.2054,40,40.7756,-73.9605,40.7731,-73.9603,40.7856,-73.9503,40.7829,-73.9498,16.6038
+SUMO_veh1,HBEFA4/PC_petrol_Euro-6ab,0.3819,1.8828,1.9692,0.0864,42,40.7749,-73.9590,40.7719,-73.9612,40.7847,-73.9482,40.7822,-73.9515,4.5915
+SUMO_veh2,HBEFA4/PC_petrol_Euro-6ab,0.3878,1.9783,2.0020,0.0237,187,40.7711,-73.9636,40.7742,-73.9614,40.7811,-73.9534,40.7843,-73.9512,1.1986
+SUMO_veh3,HBEFA4/PC_petrol_Euro-6ab,0.3848,1.4791,1.9421,0.4630,37,40.7756,-73.9607,40.7726,-73.9629,40.7856,-73.9503,40.7824,-73.9525,31.3040
+SUMO_veh4,HBEFA4/PC_petrol_Euro-6ab,0.3040,0.8638,0.9483,0.0845,32,40.7698,-73.9605,40.7722,-73.9587,40.7803,-73.9515,40.7821,-73.9487,9.7838
