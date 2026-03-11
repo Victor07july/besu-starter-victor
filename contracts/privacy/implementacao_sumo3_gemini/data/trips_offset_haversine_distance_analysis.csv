@@ -1,0 +1,3 @@
+VIN;Modelo;Distancia_SUMO_km;Distancia_Trajeto_Original_km;Distancia_Trajeto_com_Offset_km;Diferenca_Distancia_km;Num_Pontos;Start_Lat_Original;Start_Lon_Original;End_Lat_Original;End_Lon_Original;Start_Lat_com_Offset;Start_Lon_com_Offset;End_Lat_com_Offset;End_Lon_com_Offset;Diferenca_Distancia_Percentual;Offset_X_Graus;Offset_Y_Graus;Raio_Maximo_km
+SUMO_veh0;HBEFA4/PC_petrol_Euro-6ab;0,3921;1,2373;4,6992;3,4618;40;40,7756;-73,9605;40,7731;-73,9603;40,7897;-73,9462;40,7870;-73,9451;279,7824;0,0200;0,0200;2,0000
+SUMO_veh1;HBEFA4/PC_petrol_Euro-6ab;0,3819;1,8828;5,5358;3,6530;42;40,7749;-73,9590;40,7719;-73,9612;40,7900;-73,9450;40,7866;-73,9466;194,0218;0,0200;0,0200;2,0000
