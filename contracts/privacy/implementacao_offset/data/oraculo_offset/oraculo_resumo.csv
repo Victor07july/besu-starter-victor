@@ -1,0 +1,2 @@
+vehicle_id;target_percent;sumo_km;best_diff_percent;error_to_target_percent;original_km;private_km;best_attempt;offset_distance_km;offset_angle_deg;audit_hash_sha256
+carro_1000;15,0;2,925556;-11,140031912073137;3,8599680879268625;0,19417583336854707;0,17254458356575697;2;1,8052545527551644;157,89658361672636;5c90b55fea2bd6759f4d4320cc2fdc14e3620cb775b458ab62002abe50d9ec8a
